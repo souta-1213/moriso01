@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロジェクトマネジメント試験対策クイズ</title>
+    <style>
+        :root {
+            --primary-color: #2b6cb0;
+            --primary-hover: #2c5282;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --success-bg: #c6f6d5;
+            --success-border: #38a169;
+            --success-text: #22543d;
+            --error-bg: #fed7d7;
+            --error-border: #e53e3e;
+            --error-text: #742a2a;
+            --border-color: #e2e8f0;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { margin: 0; font-size: 24px; }
+        .score-board {
+            display: none;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 2px solid var(--primary-color);
+        }
+        .score-text { font-size: 22px; font-weight: bold; margin-bottom: 20px; }
+        .quiz-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+        .question-num {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .option-item {
+            margin-bottom: 12px;
+        }
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 14px 20px;
+            background: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-color);
+        }
+        .option-btn:hover:not(:disabled) {
+            background: #ebf8ff;
+            border-color: var(--primary-color);
+        }
+        .option-btn:disabled { cursor: not-allowed; }
+        .option-btn.correct {
+            background: var(--success-bg) !important;
+            border-color: var(--success-border) !important;
+            color: var(--success-text);
+            font-weight: bold;
+        }
+        .option-btn.wrong {
+            background: var(--error-bg) !important;
+            border-color: var(--error-border) !important;
+            color: var(--error-text);
+        }
+        .explanation-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            background: #edf2f7;
+            border-left: 5px solid #4a5568;
+            font-size: 15px;
+        }
+        .explanation-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .action-btn {
+            padding: 12px 30px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .action-btn:hover { background: var(--primary-hover); }
+        .action-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📊 プロジェクトマネジメント試験対策クイズ</h1>
+    </header>
+
+    <div id="scoreBoard" class="score-board">
+        <div class="score-text">結果発表</div>
+        <p id="scoreResult" style="font-size: 28px; color: var(--primary-color); font-weight: bold;"></p>
+        <button class="action-btn" onclick="location.reload()">もう一度挑戦する</button>
+    </div>
+
+    <div id="quizContainer"></div>
+</div>
+
+<script>
+const quizData = [
+    {
+        "question": "あるプロジェクトで、主要な顧客から当初の計画書に記載のなかった機能追加をカジュアルに依頼されました。正式な変更管理の手続き（CCBによる承認など）を経ずに、このように作業範囲が徐々に拡大してしまう好ましくない状態を何と呼びますか。",
+        "options": [
+            "テーラリング",
+            "スコープクリープ",
+            "トリプルコンストレイント",
+            "スチュワードシップ"
+        ],
+        "answer": 1,
+        "explanation": "正式な変更管理手続きを経ずに、スコープがなし崩し的に拡大する状態を「スコープクリープ」と呼びます。テーラリングは手法の調整、トリプルコンストレイントは制約の相互関係、スチュワードシップは責任ある管理者の振る舞いを指すため不適切です。"
+    },
+    {
+        "question": "プロジェクトの計画を策定する際、「今回の開発サーバーは予定通り7月1日までに提供される」と仮定し、それを前提にスケジュールを作成しました。このように、計画策定時に証明なしで真とみなす事項を何と呼びますか。また、これが崩れた場合どうなりますか。",
+        "options": [
+            "制約条件であり、破ると契約違反になる",
+            "前提条件であり、誤っていればプロジェクトのリスクとなる",
+            "マイルストンであり、遅れても全体に影響はない",
+            "ワークパッケージであり、コストを見積もる最小単位となる"
+        ],
+        "answer": 1,
+        "explanation": "計画策定時に証明なしで真とみなす事項は「前提条件」です。前提条件が覆った場合は不確実な要素、すなわちリスクとなるため明示して管理する必要があります。"
+    },
+    {
+        "question": "WBS（Work Breakdown Structure）を最下層の「ワークパッケージ」まで分解しました。このワークパッケージをさらにスケジュール上の個々の作業要素に分解したものを何と呼びますか。",
+        "options": [
+            "アクティビティ",
+            "ベースライン",
+            "形式知",
+            "成果物"
+        ],
+        "answer": 0,
+        "explanation": "WBSの最下層であるワークパッケージを構成する、スケジュール上の個々の作業要素を「アクティビティ」と呼びます。ベースラインは承認済み基準値、形式知は言語化された知識、成果物は検証可能な製品や結果を指します。"
+    },
+    {
+        "question": "スケジュール管理において、あるアクティビティが「全体スケジュールに影響を与えずに遅らせられる時間の幅」を検出し、その余裕時間を活用して人員配置を調整することにしました。この余裕時間のことを何と呼びますか。",
+        "options": [
+            "クリティカルパス",
+            "マイルストン",
+            "フロート",
+            "クラッシング"
+        ],
+        "answer": 2,
+        "explanation": "全体スケジュールに影響を与えずに遅らせられる作業の余裕時間を「フロート（またはスラック）」と呼びます。クリティカルパスは余裕がゼロの経路、マイルストンは特定の時点、クラッシングは資源投入による期間短縮技法です。"
+    },
+    {
+        "question": "プロジェクトの進捗報告で「現在の出来高（アーンドバリュー）をもとに、コストとスケジュールの状況を定量的に評価したところ、予算を上回るコストが発生していることが判明した」と報告がありました。この進捗管理手法の名称はどれですか。",
+        "options": [
+            "PERT",
+            "EVM",
+            "PDCA",
+            "モンテカルロ分析"
+        ],
+        "answer": 1,
+        "explanation": "出来高を用いてコストとスケジュールの進捗を定量的に管理する手法は「EVM（Earned Value Management）」です。PERTは日程分析、PDCAは改善サイクル、モンテカルロ分析は乱数シミュレーションです。"
+    },
+    {
+        "question": "当初、5人のステークホルダーで情報共有を行っていましたが、プロジェクトの規模拡大に伴い新たに3人のステークホルダーが参加し、合計8人になりました。このとき、コミュニケーションのチャネル数（伝達経路の数）はいくつ増加しましたか。",
+        "options": [
+            "3つ増加した",
+            "10個増加した",
+            "18個増加した",
+            "28個増加した"
+        ],
+        "answer": 2,
+        "explanation": "チャネル数の公式は n(n-1)/2 です。5人のときは 5*(5-1)/2 = 10。8人のときは 8*(8-1)/2 = 28 となります。増加数を問われているため、28 - 10 = 18個 となります。"
+    },
+    {
+        "question": "プロジェクトで導入予定の外部システムについて、仕様変更が発生した際の追加費用トラブルを防ぐため、事前にベンダーへ具体的な提案や費用見積もりを公式に求める文書を発行することにしました。この文書を何と呼びますか。",
+        "options": [
+            "RFI",
+            "RFP",
+            "プロジェクト憲章",
+            "ステークホルダーリスト"
+        ],
+        "answer": 1,
+        "explanation": "発注者がベンダーに具体的な提案や見積もりを求める文書は「RFP（提案依頼書）」です。RFIは製品やサービスの情報提供を求める文書（見積もり前段階）のため不適切です。"
+    },
+    {
+        "question": "PMBOK第7版では、これまでのプロセス中心の体系から「原則中心」の体系へと転換されました。このうち、組織内外に対して誠実・敬意・配慮をもって、責任ある管理者として振る舞うことを求める原則を何と呼びますか。",
+        "options": [
+            "システム思考",
+            "スチュワードシップ",
+            "テーラリング",
+            "ポートフォリオマネジメント"
+        ],
+        "answer": 1,
+        "explanation": "誠実・敬意・配慮をもって責任ある管理者として振る舞う原則は「スチュワードシップ」です。システム思考は全体最適の視点、テーラリングは手法の調整を指します。"
+    },
+    {
+        "question": "ITシステムの構築において、発注者であるユーザー企業と受注者であるSIerとの間で、業務範囲や検収基準の認識齟齬を未然に防ぎたいと考えています。ソフトウェアの企画・開発・運用・保守・廃棄までの作業項目を共通の物差しで定義している日本の標準規格はどれですか。",
+        "options": [
+            "PMBOK第6版",
+            "PMBOK第7版",
+            "共通フレーム 2013",
+            "OPM"
+        ],
+        "answer": 2,
+        "explanation": "IPAが策定した、ソフトウェアライフサイクルの作業項目を共通の物差しで定義した日本の標準は「共通フレーム 2013」です。発注者と受注者の認識齟齬を防ぐために活用されます。"
+    },
+    {
+        "question": "システム開発プロジェクトにおいて、業務要件を定義する「要件定義工程」よりも前に、企業の経営戦略との整合性を確認したり、システム全体の構想を固めたりする最上流の工程を何と呼びますか。",
+        "options": [
+            "非機能要件定義工程",
+            "超上流工程",
+            "品質保証工程",
+            "終結プロセス工程"
+        ],
+        "answer": 1,
+        "explanation": "要件定義より前の、企画や経営戦略との整合、全体構想を固める最上流の工程を「超上流」と呼びます。プロジェクトの成否を大きく左右する非常に重要な工程です。"
+    }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+
+const quizContainer = document.getElementById('quizContainer');
+const scoreBoard = document.getElementById('scoreBoard');
+const scoreResult = document.getElementById('scoreResult');
+
+function loadQuestion(index) {
+    if (index >= quizData.length) {
+        showResults();
+        return;
+    }
+
+    quizContainer.innerHTML = '';
+    const data = quizData[index];
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+
+    const qNum = document.createElement('div');
+    qNum.className = 'question-num';
+    qNum.innerText = `第 ${index + 1} 問 / 全 ${quizData.length} 問`;
+    card.appendChild(qNum);
+
+    const qText = document.createElement('div');
+    qText.className = 'question-text';
+    qText.innerText = data.question;
+    card.appendChild(qText);
+
+    const optionsList = document.createElement('ul');
+    optionsList.className = 'options-list';
+
+    data.options.forEach((option, i) => {
+        const item = document.createElement('li');
+        item.className = 'option-item';
+
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = option;
+        btn.onclick = () => selectOption(btn, i, data.answer, data.explanation);
+
+        item.appendChild(btn);
+        optionsList.appendChild(item);
+    });
+
+    card.appendChild(optionsList);
+
+    const explanationBox = document.createElement('div');
+    explanationBox.className = 'explanation-box';
+    explanationBox.id = 'explanationBox';
+    explanationBox.innerHTML = '<div class="explanation-title">💡 解説</div><div id="explanationText"></div>';
+    card.appendChild(explanationBox);
+
+    const navDiv = document.createElement('div');
+    navDiv.className = 'nav-buttons';
+    
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'action-btn';
+    nextBtn.id = 'nextBtn';
+    nextBtn.innerText = index === quizData.length - 1 ? '結果を見る' : '次の問題へ';
+    nextBtn.disabled = true;
+    nextBtn.onclick = () => {
+        currentQuestionIndex++;
+        loadQuestion(currentQuestionIndex);
+    };
+    
+    navDiv.appendChild(nextBtn);
+    card.appendChild(navDiv);
+
+    quizContainer.appendChild(card);
+}
+
+function selectOption(selectedBtn, selectedIndex, correctIndex, explanation) {
+    const buttons = document.querySelectorAll('.option-btn');
+    
+    buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === correctIndex) {
+            btn.classList.add('correct');
+        }
+    });
+
+    if (selectedIndex === correctIndex) {
+        score++;
+    } else {
+        selectedBtn.classList.add('wrong');
+    }
+
+    const expBox = document.getElementById('explanationBox');
+    const expText = document.getElementById('explanationText');
+    expText.innerText = explanation;
+    expBox.style.display = 'block';
+
+    document.getElementById('nextBtn').disabled = false;
+}
+
+function showResults() {
+    quizContainer.style.display = 'none';
+    scoreBoard.style.display = 'block';
+    scoreResult.innerText = `${quizData.length}問中 ${score}問 正解！`;
+}
+
+// 初回読込
+loadQuestion(currentQuestionIndex);
+</script>
+
+</body>
+</html>
