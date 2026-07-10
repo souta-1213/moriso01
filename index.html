@@ -63,27 +63,28 @@
             font-size: 14px;
         }
         .question-text {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 600;
             margin-bottom: 20px;
-            padding: 15px;
+            padding: 20px;
             background: #ebf8ff;
             border-radius: 6px;
             border-left: 5px solid var(--primary-color);
+            line-height: 1.8;
         }
         .options-list { list-style: none; padding: 0; margin: 0; }
         .option-item { margin-bottom: 12px; }
         .option-btn {
             width: 100%; text-align: left; padding: 14px 20px;
             background: #fff; border: 2px solid var(--border-color);
-            border-radius: 6px; font-size: 15px; cursor: pointer;
-            transition: all 0.2s ease; color: var(--text-color); line-height: 1.5;
+            border-radius: 6px; font-size: 16px; cursor: pointer;
+            transition: all 0.2s ease; color: var(--text-color); font-weight: bold;
         }
         .option-btn:hover:not(:disabled) { background: #ebf8ff; border-color: var(--primary-color); }
         .option-btn:disabled { cursor: not-allowed; }
         .option-btn.correct {
             background: var(--success-bg) !important; border-color: var(--success-border) !important;
-            color: var(--success-text); font-weight: bold;
+            color: var(--success-text);
         }
         .option-btn.wrong {
             background: var(--error-bg) !important; border-color: var(--error-border) !important;
@@ -117,11 +118,14 @@
 
     <div id="quizContainer" class="quiz-card">
         <div id="qNum" class="question-num"></div>
-        <div class="question-text">次の用語の意味として正しいものを選んでください。<br><br>【 <span id="qTerm" style="color:#e53e3e;"></span> 】</div>
+        <div class="question-text">
+            次の意味を示す用語として、正しいものを選んでください。<br><br>
+            <span id="qDef" style="color:#2d3748; font-weight: normal;"></span>
+        </div>
         <ul class="options-list" id="optionsList"></ul>
         
         <div class="explanation-box" id="explanationBox">
-            <div class="explanation-title">💡 正しい意味（用語集より）</div>
+            <div class="explanation-title">💡 正解と解説</div>
             <div id="explanationText"></div>
         </div>
 
@@ -142,7 +146,7 @@
 </div>
 
 <script>
-// ここに用語集のデータを追加していきます（テスト用に最初の20個を登録済）
+// ここに用語集のデータを追加していきます（テスト用に最初の20個を登録済。残りの80個も同じ形式で追加してください）
 const glossary = [
     { term: "PMBOK", def: "Project Management Body of Knowledge。米国 PMI が体系化したプロジェクトマネジメントの知識体系。世界標準として広く参照される。" },
     { term: "PMBOK6", def: "PMBOK 第 6 版。5 つのプロセス群・10 の知識エリア・49 のプロセスを軸とした、プロセス中心の体系。" },
@@ -192,14 +196,22 @@ function startBatch(batchIndex) {
         return;
     }
 
-    // 各問題の選択肢（ダミー3つ＋正解1つ）を生成
+    // 選択肢（ダミー用語3つ＋正解の用語1つ）を生成
     currentBatchQuestions = batchItems.map(item => {
-        let wrongDefs = glossary.filter(g => g.term !== item.term).map(g => g.def);
-        wrongDefs.sort(() => 0.5 - Math.random()); // ランダムシャッフル
-        let options = [item.def, wrongDefs[0], wrongDefs[1], wrongDefs[2]];
-        options.sort(() => 0.5 - Math.random()); // 選択肢の位置をシャッフル
+        // 正解以外の「用語（term）」を抽出してシャッフル
+        let wrongTerms = glossary.filter(g => g.term !== item.term).map(g => g.term);
+        wrongTerms.sort(() => 0.5 - Math.random()); 
         
-        return { term: item.term, def: item.def, options: options, correctIndex: options.indexOf(item.def) };
+        // 4択の選択肢を作成し、シャッフル
+        let options = [item.term, wrongTerms[0], wrongTerms[1], wrongTerms[2]];
+        options.sort(() => 0.5 - Math.random()); 
+        
+        return { 
+            term: item.term, 
+            def: item.def, 
+            options: options, 
+            correctIndex: options.indexOf(item.term) 
+        };
     });
 
     loadQuestion();
@@ -208,15 +220,18 @@ function startBatch(batchIndex) {
 function loadQuestion() {
     const q = currentBatchQuestions[currentQuestionIndex];
     document.getElementById('qNum').innerText = `第 ${currentQuestionIndex + 1} 問 / 全 ${currentBatchQuestions.length} 問 (セット ${currentBatchIndex + 1})`;
-    document.getElementById('qTerm').innerText = q.term;
+    
+    // 問題文に「意味（定義）」を表示
+    document.getElementById('qDef').innerText = q.def;
     
     const optionsList = document.getElementById('optionsList');
     optionsList.innerHTML = '';
     
+    // 選択肢に「用語」を表示
     q.options.forEach((opt, index) => {
         const li = document.createElement('li');
         li.className = 'option-item';
-        li.innerHTML = `<button class="option-btn" onclick="selectOption(this, ${index}, ${q.correctIndex}, '${q.def}')">${opt}</button>`;
+        li.innerHTML = `<button class="option-btn" onclick="selectOption(this, ${index}, ${q.correctIndex}, '${q.term}')">${index + 1}. ${opt}</button>`;
         optionsList.appendChild(li);
     });
 
@@ -227,7 +242,7 @@ function loadQuestion() {
     nextBtn.disabled = true;
 }
 
-function selectOption(btn, selectedIndex, correctIndex, exactDef) {
+function selectOption(btn, selectedIndex, correctIndex, exactTerm) {
     const buttons = document.querySelectorAll('.option-btn');
     buttons.forEach((b, i) => {
         b.disabled = true;
@@ -240,7 +255,8 @@ function selectOption(btn, selectedIndex, correctIndex, exactDef) {
         btn.classList.add('wrong');
     }
 
-    document.getElementById('explanationText').innerText = exactDef;
+    // 解説に正解の用語を表示
+    document.getElementById('explanationText').innerHTML = `正解は <strong>【 ${exactTerm} 】</strong> です。`;
     document.getElementById('explanationBox').style.display = 'block';
     document.getElementById('nextBtn').disabled = false;
 }
@@ -265,7 +281,7 @@ function showBatchResult() {
     if (score === currentBatchQuestions.length) {
         msg.innerText = "全問正解です！素晴らしい！この調子で次のセットも頑張りましょう。";
     } else {
-        msg.innerText = "間違えた問題がありました。用語の定義をもう一度確認するために、このセットを再挑戦することをお勧めします！";
+        msg.innerText = "間違えた問題がありました。用語を確実に覚えるために、このセットを再挑戦することをお勧めします！";
     }
 
     const nextBatchBtn = document.getElementById('nextBatchBtn');
